@@ -1,4 +1,9 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends python3 python3-pip python3-venv
+RUN sudo apt update
+RUN sudo apt install python3 -y
+RUN sudo apt install pip -y
+RUN python3 -m venv venv
+RUN source /venv/bin/activate
+RUN pip install -r requirements.txt
+RUN deactivate
