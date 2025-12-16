@@ -4,19 +4,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # 1
-df = None
+df = pd.read_csv("medical_examination.csv")
 
 # 2
-df['overweight'] = None
+overweightData = int(df["weight"]/(df["height"]**2) > 25)
+df['overweight'] = overweightData
 
 # 3
-
+df["cholesterol"] = int(df["cholesterol"] > 1)
+df["gluc"] = int(df["gluc"] > 1)
 
 # 4
 def draw_cat_plot():
     # 5
-    df_cat = None
-
+    df_cat = pd.melt(df, id_vars=["cardio"], value_vars=["active", "alco", "cholesterol", "gluc", "overweight", "smoke"])
 
     # 6
     df_cat = None
