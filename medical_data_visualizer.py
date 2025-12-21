@@ -40,9 +40,10 @@ def draw_cat_plot():
 
     # 6
     df_cat = df_cat.groupby(['cardio', 'variable', 'value']).size().reset_index(name='total')
+    df_cat['total'] = df_cat['total']
     
     # 7
-    g = sns.catplot(x="variable", y="count", kind="bar", data=df_cat)
+    g = sns.catplot(x="variable", y="total", kind="bar", data=df_cat)
 
     # 8
     fig = g.figure
