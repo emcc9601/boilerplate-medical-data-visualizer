@@ -7,12 +7,31 @@ import numpy as np # pyright: ignore[reportMissingImports]
 df = pd.read_csv("medical_examination.csv")
 
 # 2
-overweightData = int(df["weight"]/(df["height"]**2) > 25)
+overweightData = []
+for i in range(len(df["weight"])):
+    if df["weight"][i]/(df["height"][i]**2) > 25:
+        overweightData.append(1)
+    else:
+        overweightData.append(0)
 df['overweight'] = overweightData
 
 # 3
-df["cholesterol"] = int(df["cholesterol"] > 1)
-df["gluc"] = int(df["gluc"] > 1)
+newChol = []
+newGluc = []
+
+for i in range(len(df["cholesterol"])):
+    if df["cholesterol"][i] >= 1:
+        newChol.append(1)
+    else:
+        newChol.append(0)
+df["cholesterol"] = newChol
+
+for i in range(len(df["gluc"])):
+    if df["gluc"][i] >= 1:
+        newGluc.append(1)
+    else:
+        newGluc.append(0)
+df["gluc"] = newGluc
 
 # 4
 def draw_cat_plot():
@@ -20,15 +39,13 @@ def draw_cat_plot():
     df_cat = pd.melt(df, id_vars=["cardio"], value_vars=["active", "alco", "cholesterol", "gluc", "overweight", "smoke"])
 
     # 6
-    df_cat = None
+    df_cat = df_cat.groupby(['cardio', 'variable', 'value']).size().reset_index(name='total')
     
-
     # 7
-
-
+    g = sns.catplot(x="variable", y="count", kind="bar", data=df_cat)
 
     # 8
-    fig = None
+    fig = g.figure
 
 
     # 9
