@@ -43,7 +43,7 @@ def draw_cat_plot():
     df_cat['total'] = df_cat['total']
     
     # 7
-    g = sns.catplot(x="variable", y="total", kind="bar", data=df_cat)
+    g = sns.catplot(x="variable", y="total", kind="count", data=df_cat)
 
     # 8
     fig = g.figure
