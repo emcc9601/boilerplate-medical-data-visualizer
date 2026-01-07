@@ -62,27 +62,44 @@ def draw_heat_map():
     New_ap_hi = []
     New_height = []
     New_weight = []
+    removedIndexes = []
 
     for i in range(len(df["ap_lo"])):
         if (df["ap_lo"][i] <= df["ap_hi"][i]):
             New_ap_lo.append(df["ap_lo"][i])
             New_ap_hi.append(df["ap_hi"][i])
+        else:
+            removedIndexes.append(i)
+            New_ap_hi.append(0)
+            New_ap_lo.append(0)
 
     for i in range(len(df["height"])):
-        if (df["height"][i] >= df["height"].quantile(0.025)) and (df["height"][i] <= df["height"].quantile(0.975)):
+        if i in removedIndexes:
+            New_height.append(0)
+        elif (df["height"][i] >= df["height"].quantile(0.025)) and (df["height"][i] <= df["height"].quantile(0.975)):
             New_height.append(df["height"][i])
+        else:
+            removedIndexes.append(i)
+            New_height.append(0)
 
     for i in range(len(df["weight"])):
-        if (df["weight"][i] >= df["weight"].quantile(0.025)) and (df["weight"][i] <= df["weight"].quantile(0.975)):
+        if i in removedIndexes:
+            New_weight.append(0)
+        elif (df["weight"][i] >= df["weight"].quantile(0.025)) and (df["weight"][i] <= df["weight"].quantile(0.975)):
             New_weight.append(df["weight"][i])
+        else:
+            removedIndexes.append(i)
+            New_weight.append(0)
 
     df_heat["ap_lo"] = New_ap_lo
     df_heat["ap_hi"] = New_ap_hi
     df_heat["height"] = New_height
     df_heat["weight"] = New_weight
 
+    df_heat = df_heat.drop(removedIndexes)
+
     # 12
-    corr = None
+    corr = df_heat.coor(Numeric_Only=True)
 
     # 13
     mask = None
