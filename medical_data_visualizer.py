@@ -6,32 +6,16 @@ import numpy as np # pyright: ignore[reportMissingImports]
 # 1
 df = pd.read_csv("medical_examination.csv")
 
-# 2
-overweightData = []
-for i in range(len(df["weight"])):
-    if df["weight"][i]/(df["height"][i]**2) > 25:
-        overweightData.append(1)
-    else:
-        overweightData.append(0)
-df['overweight'] = overweightData
+# 2: compute BMI correctly (height is in cm -> convert to meters)
+df['overweight'] = (df['weight'] / ((df['height'] / 100) ** 2) > 25).astype(int)
 
 # 3
 newChol = []
 newGluc = []
 
-for i in range(len(df["cholesterol"])):
-    if df["cholesterol"][i] >= 1:
-        newChol.append(1)
-    else:
-        newChol.append(0)
-df["cholesterol"] = newChol
-
-for i in range(len(df["gluc"])):
-    if df["gluc"][i] >= 1:
-        newGluc.append(1)
-    else:
-        newGluc.append(0)
-df["gluc"] = newGluc
+# normalize cholesterol and gluc: 1 -> 0 (normal), >1 -> 1 (elevated)
+df['cholesterol'] = (df['cholesterol'] > 1).astype(int)
+df['gluc'] = (df['gluc'] > 1).astype(int)
 
 # 4
 def draw_cat_plot():
@@ -56,62 +40,31 @@ def draw_cat_plot():
 # 10
 def draw_heat_map():
     # 11
-    df_heat = df
+    df_heat = df.copy()
 
-    New_ap_lo = []
-    New_ap_hi = []
-    New_height = []
-    New_weight = []
-    removedIndexes = []
+    # build a boolean mask using bitwise operators (Series require & not `and`)
+    # *HELP WITH COPILOT WAS USED - I DID NOT UNDERSTAND HOW THIS FUNCTION WORKS*
+    mask = (
+        (df_heat['ap_lo'] <= df_heat['ap_hi']) &
+        (df_heat['height'] >= df_heat['height'].quantile(0.025)) &
+        (df_heat['height'] <= df_heat['height'].quantile(0.975)) &
+        (df_heat['weight'] >= df_heat['weight'].quantile(0.025)) &
+        (df_heat['weight'] <= df_heat['weight'].quantile(0.975))
+    )
 
-    for i in range(len(df["ap_lo"])):
-        if (df["ap_lo"][i] <= df["ap_hi"][i]):
-            New_ap_lo.append(df["ap_lo"][i])
-            New_ap_hi.append(df["ap_hi"][i])
-        else:
-            removedIndexes.append(i)
-            New_ap_hi.append(0)
-            New_ap_lo.append(0)
-
-    for i in range(len(df["height"])):
-        if i in removedIndexes:
-            New_height.append(0)
-        elif (df["height"][i] >= df["height"].quantile(0.025)) and (df["height"][i] <= df["height"].quantile(0.975)):
-            New_height.append(df["height"][i])
-        else:
-            removedIndexes.append(i)
-            New_height.append(0)
-
-    for i in range(len(df["weight"])):
-        if i in removedIndexes:
-            New_weight.append(0)
-        elif (df["weight"][i] >= df["weight"].quantile(0.025)) and (df["weight"][i] <= df["weight"].quantile(0.975)):
-            New_weight.append(df["weight"][i])
-        else:
-            removedIndexes.append(i)
-            New_weight.append(0)
-
-    df_heat["ap_lo"] = New_ap_lo
-    df_heat["ap_hi"] = New_ap_hi
-    df_heat["height"] = New_height
-    df_heat["weight"] = New_weight
-
-    df_heat = df_heat.drop(removedIndexes)
+    df_heat = df_heat[mask]
 
     # 12
-    corr = df_heat.coor(Numeric_Only=True)
+    corr = df_heat.corr(numeric_only=True)
 
     # 13
-    mask = None
-
-
+    mask = np.triu(np.ones_like(corr, dtype=bool))
 
     # 14
-    fig, ax = None
+    fig, ax = plt.subplots(figsize=(15, 10))
 
-    # 15
-
-
+    # 15: plot onto the Axes and keep the Figure in `fig`
+    sns.heatmap(data=corr, annot=True, fmt='.1f', cbar=True, mask=mask, ax=ax)
 
     # 16
     fig.savefig('heatmap.png')
